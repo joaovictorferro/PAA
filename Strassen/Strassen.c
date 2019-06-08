@@ -2,55 +2,70 @@
 #include<stdlib.h>
 
 int max_size = 1000;
-int** create(int,int);
+int** create(int,FILE*,int,int);
 int** createZeroMatrix(int);
 int** strassensMultiplication(int**, int**,int);
-int** standardMultiplication(int**,int**,int);
 int** strassensMultRec(int**, int**,int n);
 int** divide(int** matrixA,int n, int row,int col);
-void printMatrix(int**, int);
+void printMatrix(int**, int,int,int);
 int** addMatrix(int**,int**,int);
 int** subMatrix(int**,int**,int);
 void compose(int**,int**,int,int,int);
 
 int main() {
 	int i=0,j=0,n=0;
-
-	printf("Digite o tamanho da matriz:\n");
-	scanf("%d",&n);
-
+	int n1,n2,n3,n4;
 	int pow = 1;
+
+	FILE *in;
+	in = fopen("in.txt", "r");
+
+	if (in == NULL){
+   		printf("Nao abriu\n");
+   		return 0;
+	}
+
+	fscanf(in,"%d %d %d %d",&n1,&n2,&n3,&n4);
+	
+	if (n2 != n3){
+		printf("Numero de colunas de A é diferente do numero de colunas de B\n\n");
+		return 0;
+	}
+
+	if(n1 >= n2 && n1 >= n3 && n1 >= n4){
+		n = n1;
+	}else if(n2 >= n3 && n2 >= n4){
+		n = n2;
+	}else if(n3 >= n4){
+		n = n3;
+	}else{
+		n = n4;
+	}
+
 	while(pow < n){
 		pow *= 2;
 	}
-	int** matrixA = create(n,pow);
-	int** matrixB = create(n,pow);
+
+	int** matrixA = create(pow,in,n1,n2);
+	int** matrixB = create(pow,in,n3,n4);
 	n = pow;
 	int ** standardRes,**strassenRes;
-	
-	printf("\nMatrix A\n");
-	printMatrix(matrixA,n);
-	
-	printf("\nMatrix B\n");
-	printMatrix(matrixB,n);
-	
-	int ** stdRes = standardMultiplication(matrixA,matrixB,n);
-	printf("\nStandard Multiplication Output:\n");
-	printMatrix(stdRes,n);
 
-	printf("\nStrassen's Multiplication Output:\n");
 	int ** strassensRes = strassensMultiplication(matrixA,matrixB,n);
-	printMatrix(strassensRes,n);
+	printMatrix(strassensRes,n,n1,n4);
 
+	fclose(in);
 	return 0;
 }
 
-int ** create(int n,int pow){
+int ** create(int pow,FILE *in,int m,int n){
 	int ** array = createZeroMatrix(pow);	
 	int i,j;
-	for(i = 0;i < n; i++) {
+	int k;
+	for(i = 0;i < m; i++) {
    	 	for(j = 0; j < n; j++) {
-	    		array[i][j] = rand() % max_size;
+	    		fscanf(in,"%d",&k);
+	    		array[i][j] = k;
 			}
 	}
 	return array;
@@ -68,31 +83,26 @@ int** createZeroMatrix(int n){
 	return array;
 } 
 
-void printMatrix(int ** matrix,int n) {
+void printMatrix(int ** matrix,int n,int n1,int n4){
 	int i,j;
-	for(i=0;i<n;i++){
-		for(j=0;j<n;j++){
-			printf("%d ",matrix[i][j]);
-		}
-		printf("\n");
+	FILE* out;
+	out = fopen("out.txt","w");
+	if(out == NULL){
+		printf("Não existe o arquivo\n");
+		return ;
 	}
-}
-
-int ** standardMultiplication(int ** matrixA,int ** matrixB,int n) {
-	int ** result;
-	int i,j,k;
-
-	result = (int**)malloc(n*sizeof(int *));
-	for(i=0;i<n;i++){
-		result[i]=(int*)malloc(n*sizeof(int));
-		for(j=0;j<n;j++){
-			result[i][j]=0;
-			for(k=0;k<n;k++) {
-				result[i][j]=result[i][j]+(matrixA[i][k]*matrixB[k][j]);
-			}		
+	fprintf(out,"17212343\n");
+	fprintf(out,"%d %d\n",n1,n4);
+	for(i=0;i<n1;i++){
+		for(j=0;j<n4;j++){
+			if (j != 0){
+				fprintf(out, " ");
+			}
+			fprintf(out,"%d",matrix[i][j]);
 		}
+		fprintf(out,"\n");
 	}
-	return result;
+	fclose(out);
 }
 
 int ** strassensMultiplication(int** matrixA, int** matrixB,int n){
@@ -133,7 +143,6 @@ int** strassensMultRec(int** matrixA, int** matrixB,int n){
 		compose(c22,result,n/2,n/2,n/2);
 	} 
 	else {
-		//This is the terminating condition for recurssion.
 		result[0][0]=matrixA[0][0]*matrixB[0][0];
 	}
 	return result;
